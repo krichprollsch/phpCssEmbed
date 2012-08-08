@@ -1,0 +1,9 @@
+/* Css file to test phpCssEmbed **/
+
+.this-is a#css-selector {
+    background: url('php.gif');
+    background: url("php.gif");
+    background: url( 'php.gif' );
+    background: url( php.gif );
+    background: url(php.gif);
+}

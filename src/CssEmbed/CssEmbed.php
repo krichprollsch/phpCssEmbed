@@ -15,44 +15,69 @@ namespace CssEmbed;
 class CssEmbed
 {
 
-    const SEARCH_PATTERN = "/^(.*url\\(['\" ]*)([^'\" ]+)(['\" ]*\\).*)$/U";
-    const URI_PATTERN = "data:%s;base64,%s";
+    const SEARCH_PATTERN = "/url\\(['\" ]*([^'\" ]+)['\" ]*\\)/U";
+    const URI_PATTERN = "url(data:%s;base64,%s)";
+
+    protected $root_dir;
 
     /**
-     * @param string $css_file
-     *
-     * @return string
+     * @param $root_dir
      */
-    public function embed($css_file) {
-        $base = dirname($css_file);
+    public function setRootDir( $root_dir ) {
+        $this->root_dir = $root_dir;
+    }
+
+
+    /**
+     * @param $css_file
+     * @return null|string
+     * @throws \InvalidArgumentException
+     */
+    public function embedCss($css_file) {
+        $this->setRootDir( dirname($css_file) );
         $return = null;
         $handle = fopen($css_file, "r");
         if($handle === false) {
             throw new \InvalidArgumentException(sprintf('Cannot read file %s', $css_file));
         }
         while(($line = fgets($handle)) !== false) {
-            $return .= $this->embedLine($line, $base);
+            $return .= $this->embedString($line);
         }
         fclose($handle);
 
         return $return;
     }
 
-    protected function embedLine($line, $base) {
+    /**
+     * @param $content
+     * @return mixed
+     */
+    public function embedString($content) {
         $matches = null;
-        if( preg_match_all(self::SEARCH_PATTERN, $line, $matches) == true ) {
-            return $matches[1][0]
-                .$this->embedFile( $base . DIRECTORY_SEPARATOR . $matches[2][0] )
-                .$matches[3][0]
-                ."\n";
-        }
-        return $line;
+        return preg_replace_callback( self::SEARCH_PATTERN, array($this, 'replace'), $content );
     }
 
+    /**
+     * @param $matches
+     * @return string
+     */
+    protected function replace( $matches ) {
+        return $this->embedFile( $this->root_dir . DIRECTORY_SEPARATOR . $matches[1] );
+    }
+
+    /**
+     * @param $file
+     * @return string
+     */
     protected function embedFile( $file ) {
         return sprintf( self::URI_PATTERN, mime_content_type($file), $this->base64($file) );
     }
 
+    /**
+     * @param $file
+     * @return string
+     * @throws \InvalidArgumentException
+     */
     protected function base64( $file ) {
         if( is_file($file) == false || is_readable($file) == false ) {
             throw new \InvalidArgumentException(sprintf('Cannot read file %s', $file));

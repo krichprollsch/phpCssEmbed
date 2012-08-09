@@ -13,15 +13,28 @@ use CssEmbed\CssEmbed;
  */
 class CssEmbedTest extends \PHPUnit_Framework_TestCase {
 
-    public function testSimple() {
+    public function testEmbedCss() {
 
         $origin = __DIR__.'/rsc/test.css';
         $expected = file_get_contents( __DIR__.'/rsc/expected.css' );
 
         $cssEmbed = new CssEmbed();
-        $tested = $cssEmbed->embed( $origin );
+        $tested = $cssEmbed->embedCss( $origin );
 
         $this->assertEquals( $expected, $tested );
     }
+
+    public function testEmbedString() {
+
+        $origin = file_get_contents(__DIR__.'/rsc/test.css');
+        $expected = file_get_contents( __DIR__.'/rsc/expected.css' );
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->setRootDir(__DIR__.'/rsc'  );
+        $tested = $cssEmbed->embedString( $origin );
+
+        $this->assertEquals( $expected, $tested );
+    }
+
 
 }

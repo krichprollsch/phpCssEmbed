@@ -53,7 +53,6 @@ class CssEmbed
      * @return mixed
      */
     public function embedString($content) {
-        $matches = null;
         return preg_replace_callback( self::SEARCH_PATTERN, array($this, 'replace'), $content );
     }
 

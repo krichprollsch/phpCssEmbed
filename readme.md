@@ -6,7 +6,18 @@ PhpCssEmbed
 Usage
 -----
 
-TODO
+Use embed css with a file
+
+    <?php
+        $pce = new \CssEmbed\CssEmbed();
+        echo $pce->embedCss( $css_file );
+
+Or directly with css content
+
+    <?php
+        $pce = new \CssEmbed\CssEmbed();
+        $pce->setRootDir( '/path/to/files' );
+        echo $pce->embedString( $css_content );
 
 Unit Tests
 ----------

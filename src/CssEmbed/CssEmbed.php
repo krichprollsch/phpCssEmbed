@@ -10,7 +10,7 @@ namespace CssEmbed;
 /**
  * CssEmbed
  *
- * @author pierre
+ * @author Pierre Tachoire <pierre.tachoire@gmail.com>
  */
 class CssEmbed
 {

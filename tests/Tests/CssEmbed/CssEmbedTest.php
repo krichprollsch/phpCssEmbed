@@ -9,7 +9,7 @@ namespace CssEmbed\Tests;
 use CssEmbed\CssEmbed;
 
 /**
- * @author Pierre Tachoire
+ * @author Pierre Tachoire <pierre.tachoire@gmail.com>
  */
 class CssEmbedTest extends \PHPUnit_Framework_TestCase {
 

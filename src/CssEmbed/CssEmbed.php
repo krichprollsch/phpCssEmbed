@@ -15,7 +15,7 @@ namespace CssEmbed;
 class CssEmbed
 {
 
-    const SEARCH_PATTERN = "/url\\(['\" ]*([^'\" ]+)['\" ]*\\)/U";
+    const SEARCH_PATTERN = "/url\\(['\" ]*((?!data:)[^'\" ]+)['\" ]*\\)/U";
     const URI_PATTERN = "url(data:%s;base64,%s)";
 
     protected $root_dir;

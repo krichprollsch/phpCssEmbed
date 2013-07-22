@@ -69,7 +69,23 @@ class CssEmbed
      * @return string
      */
     protected function embedFile( $file ) {
-        return sprintf( self::URI_PATTERN, mime_content_type($file), $this->base64($file) );
+        return sprintf( self::URI_PATTERN, $this->mimeType($file), $this->base64($file) );
+    }
+
+    /**
+     * @param $file
+     * @return string
+     */
+    protected function mimeType($file) {
+        if (function_exists('mime_content_type')) {
+            return mime_content_type($file);
+        }
+
+        if ($info = @getimagesize($file)) {
+            return($info['mime']);
+        }
+
+        return 'application/octet-stream';
     }
 
     /**

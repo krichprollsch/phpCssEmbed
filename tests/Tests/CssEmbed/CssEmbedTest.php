@@ -11,32 +11,33 @@ use CssEmbed\CssEmbed;
 /**
  * @author Pierre Tachoire <pierre.tachoire@gmail.com>
  */
-class CssEmbedTest extends \PHPUnit_Framework_TestCase {
-
-    public function testEmbedCss() {
-
+class CssEmbedTest extends \PHPUnit_Framework_TestCase
+{
+    public function testEmbedCss()
+    {
         $origin = __DIR__.'/rsc/test.css';
-        $expected = file_get_contents( __DIR__.'/rsc/expected.css' );
+        $expected = file_get_contents(__DIR__.'/rsc/expected.css');
 
         $cssEmbed = new CssEmbed();
-        $tested = $cssEmbed->embedCss( $origin );
+        $tested = $cssEmbed->embedCss($origin);
 
-        $this->assertEquals( $expected, $tested );
+        $this->assertEquals($expected, $tested);
     }
 
-    public function testEmbedString() {
-
+    public function testEmbedString()
+    {
         $origin = file_get_contents(__DIR__.'/rsc/test.css');
-        $expected = file_get_contents( __DIR__.'/rsc/expected.css' );
+        $expected = file_get_contents(__DIR__.'/rsc/expected.css');
 
         $cssEmbed = new CssEmbed();
-        $cssEmbed->setRootDir(__DIR__.'/rsc'  );
-        $tested = $cssEmbed->embedString( $origin );
+        $cssEmbed->setRootDir(__DIR__.'/rsc');
+        $tested = $cssEmbed->embedString($origin);
 
-        $this->assertEquals( $expected, $tested );
+        $this->assertEquals($expected, $tested);
     }
 
-    public function mimeTypeProvider() {
+    public function mimeTypeProvider()
+    {
         return array(
           array('application/octet-stream', 'binary.file'),
           array('image/gif', 'php.gif')
@@ -46,15 +47,18 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase {
     /**
      * @dataProvider mimeTypeProvider
      */
-    public function testMimeType($expected, $file) {
+    public function testMimeType($expected, $file)
+    {
         $cssEmbed = new CssEmbedTestable();
         $file = __DIR__.'/rsc/'.$file;
         $this->assertEquals($expected, $cssEmbed->mimeType($file));
     }
 }
 
-class CssEmbedTestable extends CssEmbed {
-    public function mimeType($file) {
+class CssEmbedTestable extends CssEmbed
+{
+    public function mimeType($file)
+    {
         return parent::mimeType($file);
     }
 }

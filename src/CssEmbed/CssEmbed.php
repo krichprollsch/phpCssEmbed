@@ -23,24 +23,25 @@ class CssEmbed
     /**
      * @param $root_dir
      */
-    public function setRootDir( $root_dir ) {
+    public function setRootDir($root_dir)
+    {
         $this->root_dir = $root_dir;
     }
-
 
     /**
      * @param $css_file
      * @return null|string
      * @throws \InvalidArgumentException
      */
-    public function embedCss($css_file) {
-        $this->setRootDir( dirname($css_file) );
+    public function embedCss($css_file)
+    {
+        $this->setRootDir(dirname($css_file));
         $return = null;
         $handle = fopen($css_file, "r");
-        if($handle === false) {
+        if ($handle === false) {
             throw new \InvalidArgumentException(sprintf('Cannot read file %s', $css_file));
         }
-        while(($line = fgets($handle)) !== false) {
+        while (($line = fgets($handle)) !== false) {
             $return .= $this->embedString($line);
         }
         fclose($handle);
@@ -52,31 +53,35 @@ class CssEmbed
      * @param $content
      * @return mixed
      */
-    public function embedString($content) {
-        return preg_replace_callback( self::SEARCH_PATTERN, array($this, 'replace'), $content );
+    public function embedString($content)
+    {
+        return preg_replace_callback(self::SEARCH_PATTERN, array($this, 'replace'), $content);
     }
 
     /**
      * @param $matches
      * @return string
      */
-    protected function replace( $matches ) {
-        return $this->embedFile( $this->root_dir . DIRECTORY_SEPARATOR . $matches[1] );
+    protected function replace($matches)
+    {
+        return $this->embedFile($this->root_dir . DIRECTORY_SEPARATOR . $matches[1]);
     }
 
     /**
      * @param $file
      * @return string
      */
-    protected function embedFile( $file ) {
-        return sprintf( self::URI_PATTERN, $this->mimeType($file), $this->base64($file) );
+    protected function embedFile($file)
+    {
+        return sprintf(self::URI_PATTERN, $this->mimeType($file), $this->base64($file));
     }
 
     /**
      * @param $file
      * @return string
      */
-    protected function mimeType($file) {
+    protected function mimeType($file)
+    {
         if (function_exists('mime_content_type')) {
             return mime_content_type($file);
         }
@@ -93,10 +98,12 @@ class CssEmbed
      * @return string
      * @throws \InvalidArgumentException
      */
-    protected function base64( $file ) {
-        if( is_file($file) == false || is_readable($file) == false ) {
+    protected function base64($file)
+    {
+        if (is_file($file) == false || is_readable($file) == false) {
             throw new \InvalidArgumentException(sprintf('Cannot read file %s', $file));
         }
-        return base64_encode( file_get_contents($file) );
+
+        return base64_encode(file_get_contents($file));
     }
 }

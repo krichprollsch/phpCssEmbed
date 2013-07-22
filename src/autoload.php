@@ -7,24 +7,26 @@
  * Code inspired from the SplClassLoader RFC
  * @see https://wiki.php.net/rfc/splclassloader#example_implementation
  */
-spl_autoload_register(function($className) {
-    $className = ltrim($className, '\\');
-    if (0 != strpos($className, 'CssEmbed')) {
+spl_autoload_register(
+    function ($className) {
+        $className = ltrim($className, '\\');
+        if (0 != strpos($className, 'CssEmbed')) {
+            return false;
+        }
+        $fileName = '';
+        $namespace = '';
+        if ($lastNsPos = strrpos($className, '\\')) {
+            $namespace = substr($className, 0, $lastNsPos);
+            $className = substr($className, $lastNsPos + 1);
+            $fileName = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+        }
+        $fileName = __DIR__ . DIRECTORY_SEPARATOR . $fileName . $className . '.php';
+        if (is_file($fileName)) {
+            require $fileName;
+
+            return true;
+        }
+
         return false;
     }
-    $fileName = '';
-    $namespace = '';
-    if ($lastNsPos = strrpos($className, '\\')) {
-        $namespace = substr($className, 0, $lastNsPos);
-        $className = substr($className, $lastNsPos + 1);
-        $fileName = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
-    }
-    $fileName = __DIR__ . DIRECTORY_SEPARATOR . $fileName . $className . '.php';
-    if (is_file($fileName)) {
-        require $fileName;
-
-        return true;
-    }
-
-    return false;
-});
+);

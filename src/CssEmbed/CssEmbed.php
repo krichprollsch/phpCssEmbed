@@ -81,7 +81,7 @@ class CssEmbed
             return mime_content_type($file);
         }
 
-        if ($info = getimagesize($file)) {
+        if ($info = @getimagesize($file)) {
             return($info['mime']);
         }
 

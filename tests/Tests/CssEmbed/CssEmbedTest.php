@@ -36,5 +36,25 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals( $expected, $tested );
     }
 
+    public function mimeTypeProvider() {
+        return array(
+          array('application/octet-stream', 'binary.file'),
+          array('image/gif', 'php.gif')
+        );
+    }
 
+    /**
+     * @dataProvider mimeTypeProvider
+     */
+    public function testMimeType($expected, $file) {
+        $cssEmbed = new CssEmbedTestable();
+        $file = __DIR__.'/rsc/'.$file;
+        $this->assertEquals($expected, $cssEmbed->mimeType($file));
+    }
+}
+
+class CssEmbedTestable extends CssEmbed {
+    public function mimeType($file) {
+        return parent::mimeType($file);
+    }
 }

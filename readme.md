@@ -4,6 +4,7 @@ PhpCssEmbed
 **PhpCssEmbed** embed data uri in css part
 
 [![Build Status](https://travis-ci.org/krichprollsch/phpCssEmbed.png?branch=master)](https://travis-ci.org/krichprollsch/phpCssEmbed)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/krichprollsch/phpCssEmbed/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/krichprollsch/phpCssEmbed/?branch=master)
 
 Usage
 -----

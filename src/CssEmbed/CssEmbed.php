@@ -100,7 +100,7 @@ class CssEmbed
      */
     protected function base64($file)
     {
-        if (is_file($file) == false || is_readable($file) == false) {
+        if (is_file($file) === false || is_readable($file) === false) {
             throw new \InvalidArgumentException(sprintf('Cannot read file %s', $file));
         }
 

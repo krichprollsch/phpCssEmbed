@@ -73,6 +73,12 @@ class CssEmbed
      */
     protected function embedFile($file)
     {
+		// Check for various weird formats which the system is unable to handle. Perhaps there is a better way at some point?
+	    if (substr($file, -4) == '.eot' || substr($file, -4) == '.ttf' || substr($file, -5) == '.woff')
+        {
+            return;
+        }
+		
         return sprintf(self::URI_PATTERN, $this->mimeType($file), $this->base64($file));
     }
 

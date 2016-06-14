@@ -348,11 +348,9 @@ class CssEmbed
         $root_path = array_filter(explode('/', $root_path));
         $asset_path = array();
         while (NULL !== ($part = array_shift($path))) {
-            if (!$part || $part === '.') {
-                // drop the empty part
-            } elseif ($part == '..') {
+            if ($part == '..') {
                 array_pop($root_path);
-            } else {
+            } elseif ($part && $part !== '.') {
                 $asset_path[] = $part;
             }
         }

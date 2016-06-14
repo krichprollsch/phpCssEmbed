@@ -87,7 +87,7 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
 
         $cssEmbed->enableHttp();
         $cssEmbed->setHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
-        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_FONTS);
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_SVG);
         $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
 
         $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
@@ -98,8 +98,21 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
 
         $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
-        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_FONTS);
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_SVG);
         $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
+        $tested = $cssEmbed->embedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
+    
+    public function testHttpEmbedUrl()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http-url-only.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-url-only.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_URL_ONLY);
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
         $tested = $cssEmbed->embedString($origin);
         $this->assertEquals($expected, $tested);
     }

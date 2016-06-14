@@ -53,6 +53,57 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $file = __DIR__.'/rsc/'.$file;
         $this->assertEquals($expected, $cssEmbed->mimeType($file));
     }
+
+
+    public function testHttpEnabledEmbedString()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->setAllowHttp();
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testSetHttpFlag()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-options.css');
+
+        $cssEmbed = new CssEmbed();
+
+        $cssEmbed->setAllowHttp();
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_FONTS);
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
+
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+
+        $this->assertEquals($expected, $tested);
+
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
+
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_FONTS);
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
+        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testHttpEnabledEmbedCss()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->setAllowHttp();
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
 }
 
 class CssEmbedTestable extends CssEmbed

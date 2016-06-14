@@ -353,10 +353,10 @@ class CssEmbed
             } elseif ($part == '..') {
                 array_pop($root_path);
             } else {
-                $_path[] = $part;
+                $asset_path[] = $part;
             }
         }
-        $asset_path = implode('/', $_path);
+        $asset_path = implode('/', $asset_path);
         $root_path = empty($root_path) ? '/' : '/' . implode('/', $root_path) . '/';
 
         // ... and build the URL

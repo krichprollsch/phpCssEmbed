@@ -1,0 +1,7 @@
+/* Css file to test phpCssEmbed in HTTP mode **/
+
+.this-is a#css-selector {
+    background: url('test.gif?http_param=1');
+    background: url('//httpbin.org/image/png');
+    background: url(php.gif);
+}

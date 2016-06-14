@@ -53,6 +53,69 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $file = __DIR__.'/rsc/'.$file;
         $this->assertEquals($expected, $cssEmbed->mimeType($file));
     }
+
+    public function testHttpEnabledEmbedCss()
+    {
+        $origin = __DIR__.'/rsc/test-local-with-http.css';
+        $expected = file_get_contents(__DIR__.'/rsc/expected-local-with-http.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $tested = $cssEmbed->embedCss($origin);
+
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testHttpEnabledEmbedString()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->embedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testSetHttpFlag()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-options.css');
+
+        $cssEmbed = new CssEmbed();
+
+        $cssEmbed->enableHttp();
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_SVG);
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
+
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->embedString($origin);
+
+        $this->assertEquals($expected, $tested);
+
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
+
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_SVG);
+        $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
+        $tested = $cssEmbed->embedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
+    
+    public function testHttpEmbedUrl()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http-url-only.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-url-only.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_URL_ONLY);
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->embedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
 }
 
 class CssEmbedTestable extends CssEmbed

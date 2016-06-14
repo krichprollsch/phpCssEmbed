@@ -50,8 +50,8 @@ class CssEmbed
      *     - CssEmbed::HTTP_URL_ON_ERROR: if there is an error fetching a remote
      *       asset, embed the URL instead of throwing an exception
      *     - CssEmbed::HTTP_EMBED_FONTS: embedding fonts will usually break them
-     *       in most browsers.  Enable this flag to force the embed. **WARNING**
-     *       this flag is currently not tested, but seems to work.
+     *       in most browsers.  Enable this flag to force the embed. WARNING:
+     *       this flag is currently not unit tested, but seems to work.
      *     - CssEmbed::HTTP_EMBED_SVG: SVG is often used as a font face; however
      *       including these in a stylesheet will cause it to bloat for browsers
      *       that don't use it.  By default SVGs will be replaced with the URL
@@ -69,9 +69,12 @@ class CssEmbed
      *
      * @return void
      */
-    public function enableHttp(
-        $flags = CssEmbed::HTTP_ENABLED|CssEmbed::HTTP_URL_ON_ERROR
-    ) {
+    public function enableHttp($flags = null)
+    {
+        if (is_null($flags)) {
+            $flags = CssEmbed::HTTP_ENABLED|CssEmbed::HTTP_URL_ON_ERROR;
+
+        }
         $this->http_flags = (int) $flags;
     }
 

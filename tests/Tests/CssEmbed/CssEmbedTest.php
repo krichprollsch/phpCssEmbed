@@ -54,6 +54,17 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $cssEmbed->mimeType($file));
     }
 
+    public function testHttpEnabledEmbedCss()
+    {
+        $origin = __DIR__.'/rsc/test-local-with-http.css';
+        $expected = file_get_contents(__DIR__.'/rsc/expected-local-with-http.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $tested = $cssEmbed->embedCss($origin);
+
+        $this->assertEquals($expected, $tested);
+    }
 
     public function testHttpEnabledEmbedString()
     {
@@ -61,9 +72,9 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
 
         $cssEmbed = new CssEmbed();
-        $cssEmbed->setAllowHttp();
+        $cssEmbed->enableHttp();
         $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
-        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+        $tested = $cssEmbed->embedString($origin);
         $this->assertEquals($expected, $tested);
     }
 
@@ -74,13 +85,13 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
 
         $cssEmbed = new CssEmbed();
 
-        $cssEmbed->setAllowHttp();
+        $cssEmbed->enableHttp();
         $cssEmbed->setHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
         $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_FONTS);
         $cssEmbed->setHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
 
         $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
-        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+        $tested = $cssEmbed->embedString($origin);
 
         $this->assertEquals($expected, $tested);
 
@@ -89,19 +100,7 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_DEFAULT_HTTPS);
         $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_FONTS);
         $cssEmbed->unsetHttpFlag(CssEmbed::HTTP_EMBED_SCHEME);
-        $tested = $cssEmbed->httpEnabledEmbedString($origin);
-        $this->assertEquals($expected, $tested);
-    }
-
-    public function testHttpEnabledEmbedCss()
-    {
-        $origin = file_get_contents(__DIR__.'/rsc/test-http.css');
-        $expected = file_get_contents(__DIR__.'/rsc/expected-http.css');
-
-        $cssEmbed = new CssEmbed();
-        $cssEmbed->setAllowHttp();
-        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
-        $tested = $cssEmbed->httpEnabledEmbedString($origin);
+        $tested = $cssEmbed->embedString($origin);
         $this->assertEquals($expected, $tested);
     }
 }

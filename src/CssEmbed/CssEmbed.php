@@ -46,7 +46,7 @@ class CssEmbed
      *
      *     - CssEmbed::HTTP_ENABLED: enable embedding over http;
      *     - CssEmbed::HTTP_DEFAULT_HTTPS: for URLs with no scheme, use https to
-     *       for urls instead of http
+     *       instead of http
      *     - CssEmbed::HTTP_URL_ON_ERROR: if there is an error fetching a remote
      *       asset, embed the URL instead of throwing an exception
      *     - CssEmbed::HTTP_EMBED_FONTS: embedding fonts will usually break them
@@ -54,7 +54,7 @@ class CssEmbed
      *     - CssEmbed::HTTP_EMBED_SVG: SVG is often used as a font face; however
      *       including these in a stylesheet will cause it to bloat for browsers
      *       that don't use it.  By default SVGs will be replaced with the URL
-     *       to the asset, set this flag to embed it.
+     *       to the asset; set this flag to force the embed of SVG files.
      *     - CssEmbed::HTTP_EMBED_SCHEME: By default, assets that are converted
      *       to URLs instead of data urls have no scheme (eg, "//example.com").
      *       This is better for stylesheets that are maybe served over http or
@@ -68,14 +68,14 @@ class CssEmbed
      *
      * @return void
      */
-    public function setAllowHttp(
+    public function enableHttp(
         $flags = CssEmbed::HTTP_ENABLED|CssEmbed::HTTP_URL_ON_ERROR
     ) {
         $this->http_flags = (int) $flags;
     }
 
     /**
-     * Set a single http option flag. See setAllowHttp for a description of
+     * Set a single http option flag. See `enableHttp` for a description of
      * available flags.
      *
      * @param integer $flag
@@ -88,7 +88,7 @@ class CssEmbed
     }
 
     /**
-     * unset a single http option flag. See setAllowHttp for a description of
+     * unset a single http option flag. See `enableHttp` for a description of
      * available flags.
      *
      * @param integer $flag
@@ -105,11 +105,8 @@ class CssEmbed
      * @return null|string
      * @throws \InvalidArgumentException
      */
-    public function embedCss($css_file, $force_root_dir = false)
+    public function embedCss($css_file)
     {
-        if ($this->http_flags & self::HTTP_ENABLED) {
-            return $this->httpEnabledEmbedCss($css_file);
-        }
         $this->setRootDir(dirname($css_file));
         $return = null;
         $handle = fopen($css_file, "r");
@@ -130,6 +127,13 @@ class CssEmbed
      */
     public function embedString($content)
     {
+        if ($this->http_flags & self::HTTP_ENABLED) {
+            return preg_replace_callback(
+                self::HTTP_SEARCH_PATTERN,
+                array($this, 'httpEnabledReplace'),
+                $content
+            );
+        }
         return preg_replace_callback(self::SEARCH_PATTERN, array($this, 'replace'), $content);
     }
 
@@ -184,45 +188,6 @@ class CssEmbed
     }
 
     /**
-     * @param $css_file
-     * @param $force_root_dir force the root directory
-     * @return null|string
-     * @throws \InvalidArgumentException
-     */
-    public function httpEnabledEmbedCss($css_file, $force_root_dir = false)
-    {
-        if (empty($this->http_flags)) {
-            $this->setAllowHttp();
-        }
-        $root_dir = $force_root_dir ? $force_root_dir : dirname($css_file);
-        $this->setRootDir($root_dir);
-        $return = null;
-        $handle = fopen($css_file, "r");
-        if ($handle === false) {
-            throw new \InvalidArgumentException(sprintf('Cannot read file %s', $css_file));
-        }
-        while (($line = fgets($handle)) !== false) {
-            $return .= $this->httpEnabledEmbedString($line);
-        }
-        fclose($handle);
-
-        return $return;
-    }
-
-    /**
-     * @param $content
-     * @return mixed
-     */
-    public function httpEnabledEmbedString($content)
-    {
-        return preg_replace_callback(
-            self::HTTP_SEARCH_PATTERN,
-            array($this, 'httpEnabledReplace'),
-            $content
-        );
-    }
-
-    /**
      * @param $matches
      * @return string
      */
@@ -230,26 +195,31 @@ class CssEmbed
     {
         // fall back to default functionality for non-remote assets
         if (!$this->isHttpAsset($matches[1])) {
+            if (preg_match('/[#\?:]/', $matches[1])) {
+                return $matches[0];
+            }
             return $this->replace($matches);
         }
         if ($asset_url = $this->resolveHttpAssetUrl($this->root_dir, $matches[1])) {
-            if ($replacement = $this->httpEmbedAsset($asset_url)) {
+            if ($replacement = $this->embedHttpAsset($asset_url)) {
                 return $replacement;
             }
-            return $this->httpEmbedAssetUrl($asset_url);
+            return $this->embedHttpAssetUrl($asset_url);
         }
         return $matches[0];
     }
 
     /**
+     * Get the contents of a URL and return it as a data uri within url()
+     *
      * @param string $url the URL to the file to embed
      * @return string|bool the string for the CSS url property, or FALSE if the
      * url could not/should not be embedded.
      */
-    protected function httpEmbedAsset($url)
+    protected function embedHttpAsset($url)
     {
         if ($this->http_flags & self::HTTP_EMBED_URL_ONLY) {
-            return;
+            return false;
         }
         if (false === ($content = @file_get_contents($url))) {
             $this->httpError('Cannot read url %s', $url);
@@ -268,7 +238,8 @@ class CssEmbed
             return false;
         }
 
-        // handle a special case: fonts will usually break if embedded.
+        // handle a special case: fonts will usually break if embedded, but
+        // user can force
         $embed_fonts = ($this->http_flags & self::HTTP_EMBED_FONTS);
         $is_font = strpos($mime, 'font') !== false;
         if ($is_font && !$embed_fonts) {
@@ -286,7 +257,14 @@ class CssEmbed
         return sprintf(self::URI_PATTERN, $mime, base64_encode($content));
     }
 
-    protected function httpEmbedAssetUrl($url)
+    /**
+     * For URLs that could not/should not be embedded, embed the resolved URL
+     * instead.
+     *
+     * @param string $url
+     * @return string
+     */
+    protected function embedHttpAssetUrl($url)
     {
         if (!($this->http_flags & self::HTTP_EMBED_SCHEME)) {
             $url = preg_replace('/^https?:/', '', $url);
@@ -376,6 +354,8 @@ class CssEmbed
         }
         $asset_path = implode('/', $_path);
         $root_path = empty($root_path) ? '/' : '/' . implode('/', $root_path) . '/';
+
+        // ... and build the URL
         $url = $root_domain . $root_path . $asset_path;
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             $this->httpError('Could not resolve "%s" with root "%s"', $path, $this->root_dir);

@@ -357,7 +357,6 @@ class CssEmbed
     /**
      * Resolve the URL to an http asset
      *
-     * @param string $root_url the root URL
      * @param string
      */
     protected function resolveAssetUrl($path)

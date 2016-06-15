@@ -35,15 +35,38 @@ A few behaviour options can be changed before embedding:
 
 Available flags are:
 
- - CssEmbed::URL_ON_ERROR: if there is an error reading an asset, embed the URL
+ - `CssEmbed::URL_ON_ERROR`: if there is an error reading an asset, embed the URL
    instead of throwing an exception
- - CssEmbed::EMBED_FONTS: embedding fonts will usually break them in most
+ - `CssEmbed::EMBED_FONTS`: embedding fonts will usually break them in most
    browsers.  Enable this flag to force the embed.
- - CssEmbed::EMBED_SVG: SVG is often used as a font face; however including
+ - `CssEmbed::EMBED_SVG`: SVG is often used as a font face; however including
    these in a stylesheet will cause it to bloat for browsers that don't use it.
    By default SVGs will be replaced with the URL to the asset; set this flag to
    force the embed of SVG files.
 
+Mime Type Detection
+-------------------
+
+By default, the class will detect mime types using PHP's built in mime type
+detection utilities. However, for more exotic file types, such as fonts, this
+can often fail. To enable mime type detection that is more inline with the the
+mime types that are typically sent by web servers, use the method
+`enableEnhancedMimeTypes()`:
+
+    <?php
+        $pce = new \CssEmbed\CssEmbed();
+        $cssEmbed->enableEnhancedMimeTypes();
+        echo $pce->embedCss( $css_file );
+
+The method accepts two parameters:
+
+  - `$path` (string): the path to the mime.types file
+  - `$create` (bool): if the file does not exist at `$path`, download and use
+    the default Apache file. The directory for `$path` must be writable for this
+    to work.
+
+Note that this option is likely necessary for the `CssEmbed::EMBED_FONTS` and
+`CssEmbed::EMBED_SVG` options to work properly.
 
 Working with HTTP Assets
 ------------------------
@@ -79,14 +102,14 @@ displayed:
 
 Available flags are:
 
- - CssEmbed::HTTP_DEFAULT_HTTPS: for URLs with no scheme, use https to
+ - `CssEmbed::HTTP_DEFAULT_HTTPS`: for URLs with no scheme, use https to
    instead of http
- - CssEmbed::HTTP_EMBED_SCHEME: By default, assets that are converted
+ - `CssEmbed::HTTP_EMBED_SCHEME`: By default, assets that are converted
    to URLs instead of data urls have no scheme (eg, "//example.com").
    This is better for stylesheets that are maybe served over http or
    https, but it will break stylesheets served from a local HTML file.
    Set this option to force the scheme (eg, "http://example.com").
- - CssEmbed::HTTP_EMBED_URL_ONLY: do not convert assets to data URLs,
+ - `CssEmbed::HTTP_EMBED_URL_ONLY`: do not convert assets to data URLs,
    only the fully qualified URL.
 
 

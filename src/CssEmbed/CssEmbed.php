@@ -19,6 +19,7 @@ class CssEmbed
     const SEARCH_PATTERN = "%url\\(['\" ]*((?!data:)[^'\" ]+)['\" ]*\\)%U";
     const DATA_URI_PATTERN = "url(data:%s;base64,%s)";
     const URL_URI_PATTERN = "url('%s')";
+    const MIME_MAGIC_URL = 'http://svn.apache.org/repos/asf/httpd/httpd/trunk/docs/conf/mime.types';
     const EMBED_FONTS = 1;
     const EMBED_SVG = 2;
     const URL_ON_ERROR = 4;
@@ -29,7 +30,10 @@ class CssEmbed
     /** @var string the root directory for finding assets */
     protected $root_dir;
 
-    /** @var integer flags that modify behavior */
+    /** @var string the path to the local mime.magic database */
+    protected $mime_magic_path = null;
+
+    /** @var integer flags that modify behavior, embed SVG by default for BC */
     protected $flags = 2;
 
     /** @var bool enable HTTP asset fetching */
@@ -94,6 +98,41 @@ class CssEmbed
         $this->flags = $this->flags|self::URL_ON_ERROR;
         $this->flags = $this->flags & (~ self::EMBED_SVG);
         $this->http_flags = (int) $flags;
+    }
+
+    /**
+     * Enable the functionality to compare mimes against a custom mime.types file.
+     *
+     * @param string $path the path to the mime types file
+     * @param bool $create download and save the Apache mime types file if the
+     * specified path does not exist
+     * @throws \InvalidArgumentException if the mime file does not exist and
+     * cannot be created.
+     * @return void
+     */
+    public function enableEnhancedMimeTypes(
+        $path = '/tmp/cssembed.mime.types',
+        $create = true
+    ) {
+        if (!file_exists($path) && $create) {
+            if ($mime_types = @file_get_contents(self::MIME_MAGIC_URL)) {
+                // special case: woff2 is too new
+                if (strpos($mime_types, 'woff2') === false) {
+                    $mime_types .= "\napplication/font-woff2 woff2";
+                }
+                file_put_contents($path, $mime_types);
+                clearstatcache();
+            }
+        }
+        if (!file_exists($path)) {
+            $msg = sprintf('mime.types does not exist and cannot be created: "%s"', $path);
+            throw new \InvalidArgumentException($msg);            
+        }
+        if (!is_readable($path) || !is_file($path)) {
+            $msg = sprintf('Invalid mime.types file: "%s"', $path);
+            throw new \InvalidArgumentException($msg);        
+        }
+        $this->mime_magic_path = $path;
     }
 
     /**
@@ -201,17 +240,17 @@ class CssEmbed
         }
         $content = file_get_contents($absolute_path);
 
-        if (function_exists('mime_content_type')) {
-            // TODO: this seems to report text/html for local svg files. Needs
-            // a better replacement, but what?
+        $mime = $this->detectMime($absolute_path);
+
+        if (!$mime && function_exists('mime_content_type')) {
             $mime = @mime_content_type($absolute_path);
         }
 
-        if (empty($mime) && $info = @getimagesize($absolute_path)) {
+        if (!$mime && $info = @getimagesize($absolute_path)) {
             $mime = $info['mime'];
         }
 
-        if (empty($mime)) {
+        if (!$mime) {
             $mime = 'application/octet-stream';
         }
 
@@ -378,10 +417,53 @@ class CssEmbed
     }
 
     /**
+     * Check the file mime type against the mime.types file
+     *
+     * @param string $path the path to the file
+     * @return string the mime, or false if it could not be identified
+     */
+    protected function detectMime($path)
+    {
+        if (!$this->mime_magic_path) {
+            return false;
+        }
+        $ext = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+        if (!$ext) {
+            return false;
+        }
+        $mime_types = file($this->mime_magic_path);
+        foreach ($mime_types as $line) {
+            if ($mime = $this->compareMime($ext, $line)) {
+                return $mime;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Compare an extention against the a line in the mime.types
+     *
+     * @param string $ext the file extension
+     * @param string $line the line from the mime.types file
+     * @return string|bool the mime type if there is a match, false if not
+     */
+    protected function compareMime($ext, $line)
+    {
+        if (strpos($line, '#') === 0) {
+            return false;
+        }
+        $line = preg_replace('/\s+/', ' ', $line);
+        $line = array_filter(explode(' ', $line));
+        $mime = array_shift($line);
+        return in_array($ext, $line) ? $mime : false;
+    }
+
+    /**
      * Throw an exception if URL_ON_ERROR is not set
      *
      * @param string $message OPTIONAL the message
-     * @param string $interpolations,... unlimited OPTIONAL strings to interpolate in the error message
+     * @param string $interpolations,... unlimited OPTIONAL strings to
+     * interpolate in the error message
      * @throws \InvalidArgmumentException
      * @return void
      */

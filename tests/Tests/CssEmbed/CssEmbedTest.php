@@ -36,14 +36,27 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $tested);
     }
 
+    public function testMimeTypes()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-mime.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-mime.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->setRootDir(__DIR__.'/rsc');
+        $cssEmbed->enableEnhancedMimeTypes();
+        $tested = $cssEmbed->embedString($origin);
+
+        $this->assertEquals($expected, $tested);
+    }
+
     public function testSetOptions()
     {
         $origin = file_get_contents(__DIR__.'/rsc/test-options.css');
         $expected = file_get_contents(__DIR__.'/rsc/expected-options.css');
 
         $cssEmbed = new CssEmbed();
-        // TODO: testing SVG fails due to bad MIME reporting on local files
-        $cssEmbed->setOptions(CssEmbed::URL_ON_ERROR|CssEmbed::EMBED_FONTS);
+        $cssEmbed->enableEnhancedMimeTypes();
+        $cssEmbed->setOptions(CssEmbed::URL_ON_ERROR|CssEmbed::EMBED_FONTS|CssEmbed::EMBED_SVG);
         
         $cssEmbed->setRootDir(__DIR__.'/rsc');
         $tested = $cssEmbed->embedString($origin);
@@ -52,7 +65,7 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testHttpEnabledEmbedCss()
-    {
+    { 
         $origin = __DIR__.'/rsc/test-http-enabled.css';
         $expected = file_get_contents(__DIR__.'/rsc/expected-http-enabled.css');
 

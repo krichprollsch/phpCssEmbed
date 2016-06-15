@@ -353,7 +353,23 @@ class CssEmbed
      */
     protected function resolveAssetUrl($path)
     {
-        $root_url = $this->root_dir;
+        $url = $this->buildAssetUrl($path);
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+        $this->error('Invalid asset url "%s"', $url);
+        return false;
+    }
+
+
+    /**
+     * Resolve the URL to an http asset
+     *
+     * @param string $path
+     * @return false|string the url, or false if not resolvable
+     */
+    protected function buildAssetUrl($path)
+    {
         $default_scheme = ($this->http_flags & self::HTTP_DEFAULT_HTTPS)
                         ? 'https:'
                         : 'http:'
@@ -364,13 +380,10 @@ class CssEmbed
             $path = $default_scheme . $path;
         }
         if (preg_match('/^https?:\/\//', $path)) {
-            if (!filter_var($path, FILTER_VALIDATE_URL)) {
-                $this->error('Invalid asset url "%s"', $path);
-                return false;
-            }
             return $path;
         }
 
+        $root_url = $this->root_dir;
         if (strpos($root_url, '//') === 0) {
             $root_url = $default_scheme . $root_url;
         }
@@ -382,28 +395,31 @@ class CssEmbed
             return $root_domain . $path;
         }
 
-        // case 3: asset is relative path        
-        // remove directory transversal (file_get_contents seems to choke on it)
+        // case 3: asset is relative path
+        $path = $this->removePathTraversals($root_path . '/' . $path);
+        $url = $root_domain . '/' . $path;
+        return $url;
+    }
+
+    /**
+     * Remove directory traversals from a path. Exists because file_get_contents
+     * seems to choke on http://example.com/path/to/dir/../other-dir/file.txt
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function removePathTraversals($path)
+    {
         $path = explode('/', $path);
-        $root_path = array_filter(explode('/', $root_path));
-        $asset_path = array();
-        while (NULL !== ($part = array_shift($path))) {
+        $return = array();
+        foreach ($path as $part) {
             if ($part == '..') {
-                array_pop($root_path);
+                array_pop($return);
             } elseif ($part && $part !== '.') {
-                $asset_path[] = $part;
+                $return[] = $part;
             }
         }
-        $asset_path = implode('/', $asset_path);
-        $root_path = empty($root_path) ? '/' : '/' . implode('/', $root_path) . '/';
-
-        // ... and build the URL
-        $url = $root_domain . $root_path . $asset_path;
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            $this->error('Could not resolve "%s" with root "%s"', $path, $this->root_dir);
-            return false;
-        }
-        return $url;
+        return implode('/', $return);
     }
 
     /**

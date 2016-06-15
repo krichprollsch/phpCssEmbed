@@ -42,7 +42,7 @@ class CssEmbed
     protected $http_flags = 0;
 
     /**
-     * @param $root_dir
+     * @param string $root_dir
      */
     public function setRootDir($root_dir)
     {
@@ -135,7 +135,7 @@ class CssEmbed
     }
 
     /**
-     * @param $css_file
+     * @param string $css_file
      * @return null|string
      * @throws \InvalidArgumentException
      */
@@ -344,7 +344,7 @@ class CssEmbed
      * Resolve the absolute path to a local asset
      *
      * @param string $path the path to the asset, relative to root_dir
-     * @return string|boolean the absolute path, or false if not found
+     * @return false|string the absolute path, or false if not found
      */
     protected function resolveAssetPath($path)
     {
@@ -357,7 +357,8 @@ class CssEmbed
     /**
      * Resolve the URL to an http asset
      *
-     * @param string
+     * @param string $path
+     * @return false|string the url, or false if not resolvable
      */
     protected function resolveAssetUrl($path)
     {

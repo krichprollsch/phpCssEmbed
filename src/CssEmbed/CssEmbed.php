@@ -124,6 +124,12 @@ class CssEmbed
         );
     }
 
+    /**
+     * preg_replace_callback callback for embedString.
+     *
+     * @param array $matches
+     * @return string
+     */
     protected function replace($matches)
     {
         if ($asset = $this->fetchAsset($matches[1])) {
@@ -163,7 +169,12 @@ class CssEmbed
         return $asset;
     }
     
-    
+    /**
+     * Get the URL to an asset as it would be embedded in a stylesheet
+     *
+     * @param string $path the path to the asset as it appears in the stylesheet
+     * @return string $url the URL to the asset
+     */
     protected function fetchAssetUrl($path)
     {
         if (!$this->isHttpAsset($path)) {
@@ -176,7 +187,12 @@ class CssEmbed
         return $url;
     }
 
-
+    /**
+     * Fetch an asset stored locally in the filesystem
+     *
+     * @param string $absolute_path the absolute path to the asset
+     * @return array same as fetchAsset
+     */
     protected function fetchLocalAsset($absolute_path)
     {
         if (!is_file($absolute_path) || !is_readable($absolute_path)) {
@@ -202,6 +218,12 @@ class CssEmbed
         return compact('content', 'mime');
     }
 
+    /**
+     * Fetch an asset stored remotely over HTTP
+     *
+     * @param string $url the url to the asset
+     * @return array same as fetchAsset
+     */
     protected function fetchHttpAsset($url)
     {
         if ($this->http_flags & self::HTTP_EMBED_URL_ONLY) {
@@ -226,6 +248,13 @@ class CssEmbed
         return compact('content', 'mime');
     }
 
+    /**
+     * Check if a successfully fetched an asset is of a type that can be
+     * embedded given the current options.
+     *
+     * @param array $asset the return value of fetchAsset
+     * @return boolean
+     */
     protected function assetIsEmbeddable(array $asset)
     {
         $embed_fonts = ($this->flags & self::EMBED_FONTS);
@@ -273,6 +302,12 @@ class CssEmbed
         return false;
     }
 
+    /**
+     * Resolve the absolute path to a local asset
+     *
+     * @param string $path the path to the asset, relative to root_dir
+     * @return string|boolean the absolute path, or false if not found
+     */
     protected function resolveAssetPath($path)
     {
         if (preg_match('/[:\?#]/', $path)) {

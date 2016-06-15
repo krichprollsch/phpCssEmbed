@@ -22,6 +22,29 @@ Or directly with css content
         $pce->setRootDir( '/path/to/files' );
         echo $pce->embedString( $css_content );
 
+Options
+-------
+
+A few behaviour options can be changed before embedding:
+
+    <?php
+        $pce = new \CssEmbed\CssEmbed();
+        $pce->setRootDir( '/path/to/files' );
+        $pce->setOptions(\CssEmbed\CssEmbed::URL_ON_ERROR|\CssEmbed\CssEmbed::EMBED_SVG);
+        echo $pce->embedString( $css_content );
+
+Available flags are:
+
+ - CssEmbed::URL_ON_ERROR: if there is an error reading an asset, embed the URL
+   instead of throwing an exception
+ - CssEmbed::EMBED_FONTS: embedding fonts will usually break them in most
+   browsers.  Enable this flag to force the embed.
+ - CssEmbed::EMBED_SVG: SVG is often used as a font face; however including
+   these in a stylesheet will cause it to bloat for browsers that don't use it.
+   By default SVGs will be replaced with the URL to the asset; set this flag to
+   force the embed of SVG files.
+
+
 Working with HTTP Assets
 ------------------------
 
@@ -45,39 +68,19 @@ This also works for embedding assets in a remote stylesheet:
         $pce->enableHttp();
         echo $pce->embedCss('http://example.com/path/to/style.css');
 
-Or when working with CSS directly:
+There are a few options available for controlling how remote assets are
+displayed:
 
     <?php
         $pce = new \CssEmbed\CssEmbed();
-        $pce->enableHttp();
+        $pce->enableHttp(true, $flags);
         $pce->setRootDir( '//example.com/path/to/assets' );
         echo $pce->embedString( $css_content );
 
-Control of HTTP behaviour can be set via bitwise flags that can be set
-as an argument for `enableHttp` or `setHttpFlag`. They can be unset with
-`unsetHttpFlag`:
-
-    <?php
-        $pce = new \CssEmbed\CssEmbed();
-        $pce->enableHttp(\CssEmbed::HTTP_ENABLED|\CssEmbed::HTTP_URL_ON_ERROR);
-        $pce->setHttpFlag(\CssEmbed::HTTP_EMBED_URL_ONLY);
-        $pce->unsetHttpFlag(\CssEmbed::HTTP_URL_ON_ERROR);
-        // ...
-
 Available flags are:
 
- - CssEmbed::HTTP_ENABLED: enable embedding over http;
  - CssEmbed::HTTP_DEFAULT_HTTPS: for URLs with no scheme, use https to
    instead of http
- - CssEmbed::HTTP_URL_ON_ERROR: if there is an error fetching a remote
-   asset, embed the URL instead of throwing an exception
- - CssEmbed::HTTP_EMBED_FONTS: embedding fonts will usually break them
-   in most browsers.  Enable this flag to force the embed. WARNING:
-   this flag is currently not unit tested, but seems to work.
- - CssEmbed::HTTP_EMBED_SVG: SVG is often used as a font face; however
-   including these in a stylesheet will cause it to bloat for browsers
-   that don't use it.  By default SVGs will be replaced with the URL
-   to the asset; set this flag to force the embed of SVG files.
  - CssEmbed::HTTP_EMBED_SCHEME: By default, assets that are converted
    to URLs instead of data urls have no scheme (eg, "//example.com").
    This is better for stylesheets that are maybe served over http or

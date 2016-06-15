@@ -1,9 +1,0 @@
-/* Css file to test phpCssEmbed in HTTP mode **/
-
-.this-is a#css-selector {
-    background: url('//httpbin.org/image/png');
-    background: url('//httpbin.org/image/jpeg');
-    background: url('//httpbin.org/image/png');
-    background: url('//httpbin.org/image/svg');
-    background: url('//httpbin.org/image/should-be-a-404');
-}

@@ -230,21 +230,32 @@ class CssEmbed
         }
         $content = file_get_contents($absolute_path);
 
-        $mime = $this->detectMime($absolute_path);
-
-        if (!$mime && function_exists('mime_content_type')) {
-            $mime = @mime_content_type($absolute_path);
-        }
-
-        if (!$mime && $info = @getimagesize($absolute_path)) {
-            $mime = $info['mime'];
-        }
-
-        if (!$mime) {
-            $mime = 'application/octet-stream';
-        }
+        $mime = $this->getLocalAssetMime($absolute_path);
 
         return compact('content', 'mime');
+    }
+
+    /**
+     * Find the mime for a file on the local file system
+     *
+     * @param string $absolute_path
+     * @return false|string the mime type, or false if not found
+     */
+    protected function getLocalAssetMime($absolute_path)
+    {
+        if ($mime = $this->detectMime($absolute_path)) {
+            return $mime;
+        }
+
+        if ($mime = @mime_content_type($absolute_path)) {
+            return $mime;
+        }
+
+        if ($info = @getimagesize($absolute_path)) {
+            return $info['mime'];
+        }
+
+        return 'application/octet-stream';
     }
 
     /**
@@ -262,19 +273,29 @@ class CssEmbed
             $this->error('Cannot read url %s', $url);
             return false;
         }
-        if (!empty($http_response_header)) {
-            foreach ($http_response_header as $header) {
-                $header = strtolower($header);
-                if (strpos($header, 'content-type:') === 0) {
-                    $mime = trim(substr($header, strlen('content-type:')));
-                }
-            }
-        }
-        if (empty($mime)) {
+        if (!($mime = $this->getHttpAssetMime($http_response_header))) {
             $this->error('No mime type sent with "%s"', $url);
             return false;
         }
         return compact('content', 'mime');
+    }
+
+    /**
+     * Extract the content type header from the headers returned with the
+     * file_get_contents http call
+     *
+     * @param array $headers the `$http_response_headers` created by `file_get_contents`
+     * @return false|string the mime type, or false if not found
+     */
+    protected function getHttpAssetMime($headers)
+    {
+        foreach ($headers as $header) {
+            $header = strtolower($header);
+            if (strpos($header, 'content-type:') === 0) {
+                return trim(substr($header, strlen('content-type:')));
+            }
+        }
+        return false;    
     }
 
     /**

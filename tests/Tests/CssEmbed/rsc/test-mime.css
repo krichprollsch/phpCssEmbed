@@ -1,0 +1,6 @@
+/* Css file to test phpCssEmbed **/
+
+.this-is a#css-selector {
+    background: url('pig.svg');
+    background: url('open-sans.woff2');
+}

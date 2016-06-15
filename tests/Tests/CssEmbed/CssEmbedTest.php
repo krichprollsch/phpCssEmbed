@@ -36,29 +36,75 @@ class CssEmbedTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $tested);
     }
 
-    public function mimeTypeProvider()
+    public function testMimeTypes()
     {
-        return array(
-          array('application/octet-stream', 'binary.file'),
-          array('image/gif', 'php.gif')
+        $origin = file_get_contents(__DIR__.'/rsc/test-mime.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-mime.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->setRootDir(__DIR__.'/rsc');
+        $cssEmbed->enableEnhancedMimeTypes();
+        $tested = $cssEmbed->embedString($origin);
+
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testSetOptions()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-options.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-options.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableEnhancedMimeTypes();
+        $cssEmbed->setOptions(CssEmbed::URL_ON_ERROR|CssEmbed::EMBED_FONTS|CssEmbed::EMBED_SVG);
+        
+        $cssEmbed->setRootDir(__DIR__.'/rsc');
+        $tested = $cssEmbed->embedString($origin);
+
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testHttpEnabledEmbedCss()
+    { 
+        $origin = __DIR__.'/rsc/test-http-enabled.css';
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-enabled.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $tested = $cssEmbed->embedCss($origin);
+
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testHttpEnabledEmbedString()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http-remote.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-remote.css');
+
+        $cssEmbed = new CssEmbed();
+        $cssEmbed->enableHttp();
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->embedString($origin);
+        $this->assertEquals($expected, $tested);
+    }
+
+    public function testHttpEnabledEnableOptions()
+    {
+        $origin = file_get_contents(__DIR__.'/rsc/test-http-options.css');
+        $expected = file_get_contents(__DIR__.'/rsc/expected-http-options.css');
+
+        $cssEmbed = new CssEmbed();
+
+        $cssEmbed->enableHttp(
+            true,
+            CssEmbed::HTTP_DEFAULT_HTTPS|CssEmbed::HTTP_EMBED_SCHEME|CssEmbed::HTTP_EMBED_URL_ONLY
         );
-    }
+        $cssEmbed->setRootDir('//httpbin.org/media/hypothetical-css-dir');
+        $tested = $cssEmbed->embedString($origin);
 
-    /**
-     * @dataProvider mimeTypeProvider
-     */
-    public function testMimeType($expected, $file)
-    {
-        $cssEmbed = new CssEmbedTestable();
-        $file = __DIR__.'/rsc/'.$file;
-        $this->assertEquals($expected, $cssEmbed->mimeType($file));
+        $this->assertEquals($expected, $tested);
+
     }
 }
 
-class CssEmbedTestable extends CssEmbed
-{
-    public function mimeType($file)
-    {
-        return parent::mimeType($file);
-    }
-}
+

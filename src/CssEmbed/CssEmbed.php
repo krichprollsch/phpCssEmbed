@@ -15,7 +15,6 @@ namespace CssEmbed;
 class CssEmbed
 {
 
-    // const SEARCH_PATTERN = "%url\\(['\" ]*((?!data:|//)[^'\"#\?: ]+)['\" ]*\\)%U";
     const SEARCH_PATTERN = "%url\\(['\" ]*((?!data:)[^'\" ]+)['\" ]*\\)%U";
     const DATA_URI_PATTERN = "url(data:%s;base64,%s)";
     const URL_URI_PATTERN = "url('%s')";
@@ -89,7 +88,7 @@ class CssEmbed
      * off. You will need to use setOptions() after this method to change that.
      *
      * @param bool $enable
-     * @param int $http_flags flags that modify HTTP behaviour
+     * @param int $flags flags that modify HTTP behaviour
      * @return void
      */
     public function enableHttp($enable = true, $flags = 0)
@@ -461,9 +460,13 @@ class CssEmbed
     /**
      * Throw an exception if URL_ON_ERROR is not set
      *
-     * @param string $message OPTIONAL the message
-     * @param string $interpolations,... unlimited OPTIONAL strings to
-     * interpolate in the error message
+     * This method accepts an unlimited number of arguments. They will be passed
+     * to sprintf to generate the error message in the exception.  For example:
+     *
+     *     $this->error('My exception about %d %s', 4, 'cats');
+     *
+     * would throw an exception with with the message "My error about 4 cats".
+     *
      * @throws \InvalidArgmumentException
      * @return void
      */

@@ -114,22 +114,13 @@ class CssEmbed
         $create = true
     ) {
         if (!file_exists($path) && $create) {
-            if ($mime_types = @file_get_contents(self::MIME_MAGIC_URL)) {
-                // special case: woff2 is too new
-                if (strpos($mime_types, 'woff2') === false) {
-                    $mime_types .= "\napplication/font-woff2 woff2";
-                }
-                file_put_contents($path, $mime_types);
-                clearstatcache();
-            }
+            $this->createMimesFile($path);
         }
         if (!file_exists($path)) {
-            $msg = sprintf('mime.types does not exist and cannot be created: "%s"', $path);
-            throw new \InvalidArgumentException($msg);            
+            $this->error('mime.types does not exist and cannot be created: "%s"', $path);
         }
         if (!is_readable($path) || !is_file($path)) {
-            $msg = sprintf('Invalid mime.types file: "%s"', $path);
-            throw new \InvalidArgumentException($msg);        
+            $this->error('Invalid mime.types file: "%s"', $path);
         }
         $this->mime_magic_path = $path;
     }
@@ -455,6 +446,26 @@ class CssEmbed
         $line = array_filter(explode(' ', $line));
         $mime = array_shift($line);
         return in_array($ext, $line) ? $mime : false;
+    }
+
+    /**
+     * Download the Apache mimes.types file and save it locally
+     *
+     * @param string $path the path to save the file to
+     * @return void
+     */
+    protected function createMimesFile($path)
+    {
+        $mime_types = @file_get_contents(self::MIME_MAGIC_URL);
+        if ($mime_types === false) {
+            return;
+        }
+        // special case: woff2 is too new
+        if (strpos($mime_types, 'woff2') === false) {
+            $mime_types .= "\napplication/font-woff2 woff2";
+        }
+        file_put_contents($path, $mime_types);
+        clearstatcache();
     }
 
     /**
